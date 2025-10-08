@@ -17,6 +17,7 @@ function App() {
     isEarlier: boolean
     isValid: boolean
     error?: string
+    newPunchInTime?: string
   } | null>(null)
 
   const handleCalculate = () => {
@@ -39,7 +40,7 @@ function App() {
             Time Difference Calculator
           </h1>
           <p className="text-sm text-muted-foreground">
-            Calculate schedule adjustments in minutes
+            Calculate when to punch in for half-day schedules
           </p>
         </div>
 
@@ -52,7 +53,7 @@ function App() {
           </CardHeader>
           <CardContent className="space-y-4">
             <TimeInput
-              label="Start Time"
+              label="Usual Punch-In Time"
               value={startTime || ""}
               onChange={setStartTime}
               id="start-time"
@@ -63,7 +64,7 @@ function App() {
             </div>
             
             <TimeInput
-              label="Original Arrival Time"
+              label="Usual Arrival Time"
               value={originalArrival || ""}
               onChange={setOriginalArrival}
               id="original-arrival"
@@ -74,7 +75,7 @@ function App() {
             </div>
             
             <TimeInput
-              label="New Arrival Time"
+              label="Target Arrival Time"
               value={newArrival || ""}
               onChange={setNewArrival}
               id="new-arrival"
@@ -89,23 +90,31 @@ function App() {
           size="lg"
         >
           <Calculator size={20} className="mr-2" />
-          Calculate Difference
+          Calculate New Punch-In Time
         </Button>
 
         {result && (
           <Card>
             <CardContent className="pt-6">
               {result.isValid ? (
-                <div className="text-center space-y-2">
-                  <div className="text-3xl font-bold tabular-nums">
-                    {result.minutes}
+                <div className="text-center space-y-4">
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">New Punch-In Time</div>
+                    <div className="text-3xl font-bold tabular-nums text-primary">
+                      {result.newPunchInTime}
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">minutes</div>
-                  <Alert className={result.isEarlier ? "border-green-200 bg-green-50" : "border-orange-200 bg-orange-50"}>
-                    <AlertDescription className="text-center font-medium">
-                      {formatTimeDifference(result.minutes, result.isEarlier)}
-                    </AlertDescription>
-                  </Alert>
+                  
+                  <div className="space-y-2">
+                    <div className="text-lg font-semibold tabular-nums">
+                      {result.minutes} minutes
+                    </div>
+                    <Alert className={result.isEarlier ? "border-green-200 bg-green-50" : "border-orange-200 bg-orange-50"}>
+                      <AlertDescription className="text-center font-medium">
+                        {formatTimeDifference(result.minutes, result.isEarlier)} than your usual punch-in time
+                      </AlertDescription>
+                    </Alert>
+                  </div>
                 </div>
               ) : (
                 <Alert className="border-destructive/20 bg-destructive/5">

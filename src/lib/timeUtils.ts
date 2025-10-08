@@ -30,6 +30,7 @@ export function calculateTimeDifference(startTime: string, originalArrival: stri
   isEarlier: boolean
   isValid: boolean
   error?: string
+  newPunchInTime?: string
 } {
   const start = parseTime(startTime)
   const original = parseTime(originalArrival)
@@ -47,32 +48,45 @@ export function calculateTimeDifference(startTime: string, originalArrival: stri
     return { minutes: 0, isEarlier: false, isValid: false, error: "Invalid new arrival time" }
   }
   
-  // Calculate time differences in minutes from midnight for same-day calculations
+  // Calculate the travel time (from punch-in to arrival)
   const startMinutes = start.getHours() * 60 + start.getMinutes()
   const originalMinutes = original.getHours() * 60 + original.getMinutes()
   const newTimeMinutes = newTime.getHours() * 60 + newTime.getMinutes()
   
-  // Calculate the original duration and new duration from start time
-  let originalDuration = originalMinutes - startMinutes
-  let newDuration = newTimeMinutes - startMinutes
-  
-  // Handle cases where arrival is earlier in the day than start (e.g., start at 2PM, arrive at 12PM)
-  // In this case, we assume it's still the same working period/shift
-  if (originalDuration < 0) {
-    originalDuration = Math.abs(originalDuration)
+  // Calculate travel duration (always positive)
+  let travelDuration = originalMinutes - startMinutes
+  if (travelDuration < 0) {
+    travelDuration += 24 * 60 // Handle next day scenario
   }
   
-  if (newDuration < 0) {
-    newDuration = Math.abs(newDuration)
+  // Calculate when you need to punch in to arrive at the new time
+  let newPunchInMinutes = newTimeMinutes - travelDuration
+  if (newPunchInMinutes < 0) {
+    newPunchInMinutes += 24 * 60 // Handle previous day scenario
   }
   
-  // Calculate the difference between new and original durations
-  const difference = newDuration - originalDuration
+  // Calculate the difference in punch-in times
+  let difference = newPunchInMinutes - startMinutes
+  
+  // Handle day boundary crossings
+  if (difference > 12 * 60) {
+    difference -= 24 * 60
+  } else if (difference < -12 * 60) {
+    difference += 24 * 60
+  }
+  
+  // Format the new punch-in time
+  const newPunchInHour = Math.floor(newPunchInMinutes / 60) % 24
+  const newPunchInMin = newPunchInMinutes % 60
+  const displayHour = newPunchInHour === 0 ? 12 : newPunchInHour > 12 ? newPunchInHour - 12 : newPunchInHour
+  const period = newPunchInHour < 12 ? 'AM' : 'PM'
+  const newPunchInTime = `${displayHour}:${newPunchInMin.toString().padStart(2, '0')} ${period}`
   
   return {
     minutes: Math.abs(difference),
     isEarlier: difference < 0,
-    isValid: true
+    isValid: true,
+    newPunchInTime
   }
 }
 
