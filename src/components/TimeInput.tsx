@@ -34,9 +34,10 @@ export function TimeInput({ label, value, onChange, id }: TimeInputProps) {
     }
   }, [value])
 
-  const updateValue = (newHour: string, newMinute: string, newPeriod: "AM" | "PM") => {
+  const updateValue = (newHour: string, newMinute: string, newPeriod: "AM" | "PM", shouldPadMinute = false) => {
     if (newHour && newMinute) {
-      const formattedTime = `${newHour}:${newMinute.padStart(2, '0')} ${newPeriod}`
+      const finalMinute = shouldPadMinute ? newMinute.padStart(2, '0') : newMinute
+      const formattedTime = `${newHour}:${finalMinute} ${newPeriod}`
       onChange(formattedTime)
     }
   }
@@ -54,6 +55,12 @@ export function TimeInput({ label, value, onChange, id }: TimeInputProps) {
     if (val === "" || (parseInt(val) >= 0 && parseInt(val) <= 59)) {
       setMinute(val)
       updateValue(hour, val, period)
+    }
+  }
+
+  const handleMinuteBlur = () => {
+    if (hour && minute) {
+      updateValue(hour, minute, period, true)
     }
   }
 
@@ -89,6 +96,7 @@ export function TimeInput({ label, value, onChange, id }: TimeInputProps) {
           placeholder="00"
           value={minute}
           onChange={handleMinuteChange}
+          onBlur={handleMinuteBlur}
           className="w-16 text-center"
         />
         <Button
