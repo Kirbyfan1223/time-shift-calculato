@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,24 @@ export function TimeInput({ label, value, onChange, id }: TimeInputProps) {
   const [hour, setHour] = useState("")
   const [minute, setMinute] = useState("")
   const [period, setPeriod] = useState<"AM" | "PM">("AM")
+
+  // Parse the value prop and update local state when it changes
+  useEffect(() => {
+    if (value) {
+      const timeRegex = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
+      const match = value.match(timeRegex)
+      if (match) {
+        const [, hourStr, minuteStr, periodStr] = match
+        setHour(hourStr)
+        setMinute(minuteStr)
+        setPeriod(periodStr.toUpperCase() as "AM" | "PM")
+      }
+    } else {
+      setHour("")
+      setMinute("")
+      setPeriod("AM")
+    }
+  }, [value])
 
   const updateValue = (newHour: string, newMinute: string, newPeriod: "AM" | "PM") => {
     if (newHour && newMinute) {

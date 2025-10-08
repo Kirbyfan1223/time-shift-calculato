@@ -47,18 +47,27 @@ export function calculateTimeDifference(startTime: string, originalArrival: stri
     return { minutes: 0, isEarlier: false, isValid: false, error: "Invalid new arrival time" }
   }
   
-  // Handle times that cross midnight
-  if (original.getTime() < start.getTime()) {
-    original.setDate(original.getDate() + 1)
+  // Calculate time differences in minutes from midnight for same-day calculations
+  const startMinutes = start.getHours() * 60 + start.getMinutes()
+  const originalMinutes = original.getHours() * 60 + original.getMinutes()
+  const newTimeMinutes = newTime.getHours() * 60 + newTime.getMinutes()
+  
+  // Calculate the original duration and new duration from start time
+  let originalDuration = originalMinutes - startMinutes
+  let newDuration = newTimeMinutes - startMinutes
+  
+  // Handle cases where arrival is earlier in the day than start (e.g., start at 2PM, arrive at 12PM)
+  // In this case, we assume it's still the same working period/shift
+  if (originalDuration < 0) {
+    originalDuration = Math.abs(originalDuration)
   }
   
-  if (newTime.getTime() < start.getTime()) {
-    newTime.setDate(newTime.getDate() + 1)
+  if (newDuration < 0) {
+    newDuration = Math.abs(newDuration)
   }
   
-  const originalMinutes = Math.floor((original.getTime() - start.getTime()) / (1000 * 60))
-  const newMinutes = Math.floor((newTime.getTime() - start.getTime()) / (1000 * 60))
-  const difference = newMinutes - originalMinutes
+  // Calculate the difference between new and original durations
+  const difference = newDuration - originalDuration
   
   return {
     minutes: Math.abs(difference),
