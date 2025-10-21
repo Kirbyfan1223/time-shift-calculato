@@ -11,6 +11,7 @@ function App() {
   const [startTime, setStartTime] = useKV<string>("start-time", "")
   const [originalArrival, setOriginalArrival] = useKV<string>("original-arrival", "")
   const [newArrival, setNewArrival] = useKV<string>("new-arrival", "")
+  const [endTime, setEndTime] = useKV<string>("end-time", "")
   
   const [result, setResult] = useState<{
     minutes: number
@@ -18,13 +19,17 @@ function App() {
     isValid: boolean
     error?: string
     newPunchInTime?: string
+    endTimeDifference?: number
+    newPunchOutTime?: string
+    totalDifference?: number
   } | null>(null)
 
   const handleCalculate = () => {
     const calculation = calculateTimeDifference(
       startTime || "", 
       originalArrival || "", 
-      newArrival || ""
+      newArrival || "",
+      endTime || ""
     )
     setResult(calculation)
   }
@@ -80,6 +85,17 @@ function App() {
               onChange={setNewArrival}
               id="new-arrival"
             />
+            
+            <div className="flex items-center justify-center py-2">
+              <ArrowRight size={20} className="text-muted-foreground" />
+            </div>
+            
+            <TimeInput
+              label="Usual Clock Out Time (Optional)"
+              value={endTime || ""}
+              onChange={setEndTime}
+              id="end-time"
+            />
           </CardContent>
         </Card>
 
@@ -115,6 +131,39 @@ function App() {
                       </AlertDescription>
                     </Alert>
                   </div>
+                  
+                  {result.newPunchOutTime && (
+                    <>
+                      <div className="border-t pt-4 space-y-2">
+                        <div className="text-sm text-muted-foreground">New Clock Out Time</div>
+                        <div className="text-3xl font-bold tabular-nums text-primary">
+                          {result.newPunchOutTime}
+                        </div>
+                      </div>
+                      
+                      {result.endTimeDifference !== undefined && (
+                        <div className="space-y-2">
+                          <div className="text-lg font-semibold tabular-nums">
+                            {result.endTimeDifference} minutes
+                          </div>
+                          <Alert className="border-blue-200 bg-blue-50">
+                            <AlertDescription className="text-center font-medium">
+                              End time shift
+                            </AlertDescription>
+                          </Alert>
+                        </div>
+                      )}
+                      
+                      {result.totalDifference !== undefined && (
+                        <div className="border-t pt-4 space-y-2">
+                          <div className="text-sm text-muted-foreground">Total Time Difference</div>
+                          <div className="text-2xl font-bold tabular-nums text-accent">
+                            {result.totalDifference} minutes
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               ) : (
                 <Alert className="border-destructive/20 bg-destructive/5">
